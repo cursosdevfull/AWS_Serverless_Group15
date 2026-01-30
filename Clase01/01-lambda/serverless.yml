@@ -1,0 +1,16 @@
+org: sergiohidalgocaceres
+app: cursosdev
+
+service: sign-up-users
+
+provider:
+  name: aws
+  architecture: x86_64
+  runtime: nodejs22.x
+
+functions:
+  myFirstApp:
+    handler: my-first-app.greet
+
+  mySecondApp:
+    handler: second-app.sum
