@@ -1,0 +1,28 @@
+org: sergiohidalgocaceres
+app: example01
+service: lambda-lambda
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  stage: ${opt:stage, "dev"}
+  iam:
+    role:
+      statements:
+        - Action: lambda:InvokeFunction
+          Effect: Allow
+          Resource: "arn:aws:lambda:*:*:function:*"
+
+build:
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: false
+
+functions:
+  source:
+    handler: ./src/handlers/source.sender
+    environment:
+      FUNCTION_NAME: !Ref DestinationLambdaFunction
+  destination:
+    handler: ./src/handlers/destination.handler    
