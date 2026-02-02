@@ -1,0 +1,34 @@
+org: sergiohidalgocaceres
+app: v1
+service: appointment
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  stage: ${opt:stage, "dev"}
+  iam:
+    role:
+      statements:
+        - Action: lambda:InvokeFunction
+          Effect: Allow
+          Resource: "arn:aws:lambda:*:*:function:*"
+
+build:
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: false
+
+functions:
+  appointment:
+    handler: ./src/handlers/appointment.handler
+    environment:
+      FUNCTION_NAME_PE: !Ref AppointmentPeLambdaFunction
+      FUNCTION_NAME_CL: !Ref AppointmentClLambdaFunction
+      FUNCTION_NAME_CO: !Ref AppointmentCoLambdaFunction
+  appointmentPe:
+    handler: ./src/handlers/appointment-pe.handler    
+  appointmentCl:
+    handler: ./src/handlers/appointment-cl.handler    
+  appointmentCo:
+    handler: ./src/handlers/appointment-co.handler            
