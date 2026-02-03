@@ -31,4 +31,4 @@ functions:
   appointmentCl:
     handler: ./src/handlers/appointment-cl.handler    
   appointmentCo:
-    handler: ./src/handlers/appointment-co.handler            
+    handler: ./src/handlers/appointment-co.handler    

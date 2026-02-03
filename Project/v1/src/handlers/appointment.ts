@@ -1,9 +1,4 @@
-import {
-  InvocationType,
-  InvokeCommand,
-  InvokeCommandInput,
-  LambdaClient,
-} from "@aws-sdk/client-lambda";
+import { LambdaInvocationType, LambdaLib } from "../lib/lambda-lib";
 
 type Event = {
   slotId: number;
@@ -12,37 +7,31 @@ type Event = {
   countryISO: "PE" | "CL" | "CO";
 };
 
-const client = new LambdaClient();
-
 export const handler = async (event: Event) => {
   const functionName = process.env["FUNCTION_NAME_" + event.countryISO];
 
-  const input: InvokeCommandInput = {
-    InvocationType: InvocationType.RequestResponse,
-    FunctionName: functionName,
-    Payload: JSON.stringify({
-      slotId: event.slotId,
-      patientId: event.patientId,
-      date: event.date,
-      countryISO: event.countryISO,
-    }),
-  };
-
-  const command = new InvokeCommand(input);
-  const response = await client.send(command);
+  const lambdaLib = new LambdaLib();
+  const response = await lambdaLib.invoke(
+    functionName!,
+    event,
+    LambdaInvocationType.RequestResponse,
+  );
 
   let rpta: number | null = null;
   try {
     if (response.Payload) {
-      const uint8Array = new Uint8Array(response.Payload);
-      const returned = JSON.parse(
-        String.fromCharCode.apply(null, Array.from(uint8Array)),
-      );
-
-      const body = JSON.parse(returned.body);
-      rpta = Number(body);
+      const returned = Buffer.from(response.Payload).toString();
+      const { body } = JSON.parse(returned);
+      rpta = JSON.parse(body);
     }
-  } catch (error) {}
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        message: "Error processing response from invoked function",
+      }),
+    };
+  }
 
   return {
     statusCode: 200,

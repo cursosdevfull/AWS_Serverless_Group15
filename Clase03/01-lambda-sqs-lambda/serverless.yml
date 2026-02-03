@@ -1,0 +1,43 @@
+org: sergiohidalgocaceres
+app: example01
+service: lambda-sqs-lambda
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  stage: ${opt:stage, "dev"}
+  iam:
+    role:
+      statements:
+        - Action: sqs:sendmessage
+          Effect: Allow
+          Resource: arn:aws:sqs:*:*:*
+
+build:
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: false
+
+functions:
+  source:
+    handler: ./src/handlers/source.sender
+    environment:
+      SQS_ELEMENT_URL: !Ref SQSElement
+  destination:
+    handler: ./src/handlers/destination.handler
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSElement
+              - Arn
+    timeout: 60
+
+resources:
+  Resources:
+    SQSElement:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: sqs-element
+        VisibilityTimeout: 300
