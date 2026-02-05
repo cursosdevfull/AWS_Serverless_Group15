@@ -1,0 +1,72 @@
+org: sergiohidalgocaceres
+app: v1
+service: appointment-v2
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  stage: ${opt:stage, "dev"}
+  iam:
+    role:
+      statements:
+        - Action: sqs:SendMessage
+          Effect: Allow
+          Resource: "arn:aws:sqs:us-east-1:*:*"
+
+build:
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: false
+
+functions:
+  appointment:
+    handler: ./src/handlers/appointment.handler
+    environment:
+      SQS_URL_PE: !Ref SQSPE
+      SQS_URL_CO: !Ref SQSCO
+      SQS_URL_CL: !Ref SQSCL
+  appointmentPe:
+    handler: ./src/handlers/appointment-pe.handler 
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSPE  
+              - Arn
+  appointmentCl:
+    handler: ./src/handlers/appointment-cl.handler    
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSCL
+              - Arn
+  appointmentCo:
+    handler: ./src/handlers/appointment-co.handler    
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSCO
+              - Arn
+
+resources:
+  Resources:
+    SQSPE:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: sqs-pe
+        VisibilityTimeout: 300    
+
+    SQSCO:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: sqs-co
+        VisibilityTimeout: 300    
+
+    SQSCL:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: sqs-cl
+        VisibilityTimeout: 300            

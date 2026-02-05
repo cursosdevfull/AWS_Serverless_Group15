@@ -1,0 +1,221 @@
+org: sergiohidalgocaceres
+app: v1
+service: appointment-v3
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  stage: ${opt:stage, "dev"}
+  iam:
+    role:
+      statements:
+        - Action: sns:publish
+          Effect: Allow
+          Resource: !Ref SNSTopicAppointment
+
+build:
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: false
+
+functions:
+  appointment:
+    handler: ./src/handlers/appointment.handler
+    environment:
+      TOPIC_ARN: !Ref SNSTopicAppointment
+    events:
+      - http:
+          path: /appointment
+          method: post
+
+  appointmentPe:
+    handler: ./src/handlers/appointment-pe.handler 
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSPE  
+              - Arn
+  appointmentCl:
+    handler: ./src/handlers/appointment-cl.handler    
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSCL
+              - Arn
+  appointmentCo:
+    handler: ./src/handlers/appointment-co.handler    
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSCO
+              - Arn
+  appointmentMx:
+    handler: ./src/handlers/appointment-mx.handler    
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSMX
+              - Arn
+resources:
+  Resources:
+    SNSTopicAppointment:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: TopicAppointment
+
+    SNSTopicAppointmentSubscriptionSQSPE:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Protocol: sqs
+        Endpoint:
+          Fn::GetAtt:
+            - SQSPE
+            - Arn
+        TopicArn:
+          Ref: SNSTopicAppointment
+        RawMessageDelivery: true
+        FilterPolicy:
+          countryISO:
+            - PE
+        FilterPolicyScope: MessageBody
+    
+    PolicySQSPE:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref SQSPE
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: sqs:SendMessage
+              Resource: !GetAtt SQSPE.Arn
+              Principal: "*"
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !Ref SNSTopicAppointment
+      
+    SNSTopicAppointmentSubscriptionSQSCO:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Protocol: sqs
+        Endpoint:
+          Fn::GetAtt:
+            - SQSCO
+            - Arn
+        TopicArn:
+          Ref: SNSTopicAppointment
+        RawMessageDelivery: true
+        FilterPolicy:
+          countryISO:
+            - CO
+        FilterPolicyScope: MessageBody
+    
+    PolicySQSCO:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref SQSCO
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: sqs:SendMessage
+              Resource: !GetAtt SQSCO.Arn
+              Principal: "*"
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !Ref SNSTopicAppointment
+      
+    SNSTopicAppointmentSubscriptionSQSCL:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Protocol: sqs
+        Endpoint:
+          Fn::GetAtt:
+            - SQSCL
+            - Arn
+        TopicArn:
+          Ref: SNSTopicAppointment
+        RawMessageDelivery: true
+        FilterPolicy:
+          countryISO:
+            - CL
+        FilterPolicyScope: MessageBody
+    
+    PolicySQSCL:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref SQSCL
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: sqs:SendMessage
+              Resource: !GetAtt SQSCL.Arn
+              Principal: "*"
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !Ref SNSTopicAppointment
+
+    SNSTopicAppointmentSubscriptionSQSMX:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Protocol: sqs
+        Endpoint:
+          Fn::GetAtt:
+            - SQSMX
+            - Arn
+        TopicArn:
+          Ref: SNSTopicAppointment
+        RawMessageDelivery: true
+        FilterPolicy:
+          countryISO:
+            - MX
+        FilterPolicyScope: MessageBody
+    
+    PolicySQSMX:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref SQSMX
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: sqs:SendMessage
+              Resource: !GetAtt SQSMX.Arn
+              Principal: "*"
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !Ref SNSTopicAppointment
+
+    SQSPE:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: sqs-pe
+        VisibilityTimeout: 300    
+
+    SQSCO:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: sqs-co
+        VisibilityTimeout: 300    
+
+    SQSCL:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: sqs-cl
+        VisibilityTimeout: 300        
+
+    SQSMX:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: sqs-mx
+        VisibilityTimeout: 300      
