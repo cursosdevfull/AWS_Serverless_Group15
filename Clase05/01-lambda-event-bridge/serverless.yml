@@ -1,0 +1,102 @@
+org: sergiohidalgocaceres
+app: example01
+service: lambda-eventbridge-lambda
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  stage: ${opt:stage, "dev"}
+  iam:
+    role:
+      statements:
+        - Action: events:PutEvents
+          Effect: Allow
+          Resource: "*"
+
+build:
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: false
+
+functions:
+  source:
+    handler: ./src/handlers/source.sender
+    environment:
+      EVENT_BUSNAME: !Ref EventBus
+    events:
+      - http:
+          path: /source
+          method: post
+
+  destination:
+    handler: ./src/handlers/destination.handler
+
+resources:
+  Resources:
+    EventBridgeRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: events.amazonaws.com
+              Action: "sts:AssumeRole"
+        Path: /
+        Policies:
+          - PolicyName: InvokeLambda
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action: 
+                    - "lambda:InvokeFunction"
+                  Resource: "*"
+
+    EventBus:
+      Type: AWS::Events::EventBus
+      Properties:
+        Name: myEventBus
+    
+    Rule:
+      Type: AWS::Events::Rule
+      Properties:
+        EventBusName: !Ref EventBus
+        EventPattern:
+          source:
+            - "web-app"
+            - "mobile-app"
+            - "desktop-app"
+          "detail-type":
+            - "appointment-create"
+            - "appointment-cancel"
+        Targets:
+          - Arn:
+              Fn::GetAtt:
+                - DestinationLambdaFunction
+                - Arn
+            Id: "DestinationCustom"
+            RoleArn:
+              Fn::GetAtt:
+                - EventBridgeRole
+                - Arn
+
+    Archive:
+      Type: AWS::Events::Archive
+      Properties:
+        ArchiveName: MyArchive
+        EventPattern:
+          source:
+            - "web-app"
+            - "mobile-app"
+            - "desktop-app"
+          "detail-type":
+            - "appointment-create"
+            - "appointment-cancel"
+        RetentionDays: 10
+        SourceArn:
+          Fn::GetAtt:
+            - EventBus
+            - Arn

@@ -1,0 +1,9 @@
+post https://hoiv861ydi.execute-api.us-east-1.amazonaws.com/dev/appointment
+Content-Type: application/json
+
+{
+  "slotId": 5212,
+  "patientId": 485,
+  "date": "2024-06-01",
+  "countryISO": "MX"
+}

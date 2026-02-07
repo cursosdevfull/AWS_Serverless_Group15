@@ -1,0 +1,303 @@
+org: sergiohidalgocaceres
+app: v1
+service: appointment-v5
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  stage: ${opt:stage, "dev"}
+  iam:
+    role:
+      statements:
+        - Action: sns:publish
+          Effect: Allow
+          Resource: !Ref SNSTopicAppointment
+        - Action: lambda:InvokeFunction
+          Effect: Allow
+          Resource: "arn:aws:lambda:*:*:function:*"          
+
+build:
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: false
+
+functions:
+  appointment:
+    handler: ./src/handlers/appointment.handler
+    environment:
+      TOPIC_ARN: !Ref SNSTopicAppointment
+    events:
+      - http:
+          path: /appointment
+          method: post
+
+  appointmentEnrichPe:
+    handler: ./src/handlers/appointment-enrich-pe.handler 
+    environment:
+      FUNCTION_NAME: !Ref AppointmentPeLambdaFunction
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSPE  
+              - Arn          
+
+  appointmentPe:
+    handler: ./src/handlers/appointment-pe.handler 
+
+  appointmentEnrichCl:
+    handler: ./src/handlers/appointment-enrich-cl.handler    
+    environment:
+      FUNCTION_NAME: !Ref AppointmentClLambdaFunction    
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSCL
+              - Arn
+
+  appointmentCl:
+    handler: ./src/handlers/appointment-cl.handler    
+
+  appointmentEnrichCo:
+    handler: ./src/handlers/appointment-enrich-co.handler    
+    environment:
+      FUNCTION_NAME: !Ref AppointmentCoLambdaFunction    
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSCO
+              - Arn
+
+  appointmentCo:
+    handler: ./src/handlers/appointment-co.handler    
+
+  appointmentEnrichMx:
+    handler: ./src/handlers/appointment-enrich-mx.handler    
+    environment:
+      FUNCTION_NAME: !Ref AppointmentMxLambdaFunction    
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSMX
+              - Arn
+
+  appointmentMx:
+    handler: ./src/handlers/appointment-mx.handler    
+
+resources:
+  Resources:
+    SNSTopicAppointment:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:service}-${self:provider.stage}-topic
+
+    SNSTopicAppointmentSubscriptionSQSPE:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Protocol: sqs
+        Endpoint:
+          Fn::GetAtt:
+            - SQSPE
+            - Arn
+        TopicArn:
+          Ref: SNSTopicAppointment
+        RawMessageDelivery: true
+        FilterPolicy:
+          countryISO:
+            - PE
+        FilterPolicyScope: MessageBody
+    
+    PolicySQSPE:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref SQSPE
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: sqs:SendMessage
+              Resource: !GetAtt SQSPE.Arn
+              Principal: "*"
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !Ref SNSTopicAppointment
+      
+    SNSTopicAppointmentSubscriptionSQSCO:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Protocol: sqs
+        Endpoint:
+          Fn::GetAtt:
+            - SQSCO
+            - Arn
+        TopicArn:
+          Ref: SNSTopicAppointment
+        RawMessageDelivery: true
+        FilterPolicy:
+          countryISO:
+            - CO
+        FilterPolicyScope: MessageBody
+    
+    PolicySQSCO:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref SQSCO
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: sqs:SendMessage
+              Resource: !GetAtt SQSCO.Arn
+              Principal: "*"
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !Ref SNSTopicAppointment
+      
+    SNSTopicAppointmentSubscriptionSQSCL:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Protocol: sqs
+        Endpoint:
+          Fn::GetAtt:
+            - SQSCL
+            - Arn
+        TopicArn:
+          Ref: SNSTopicAppointment
+        RawMessageDelivery: true
+        FilterPolicy:
+          countryISO:
+            - CL
+        FilterPolicyScope: MessageBody
+    
+    PolicySQSCL:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref SQSCL
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: sqs:SendMessage
+              Resource: !GetAtt SQSCL.Arn
+              Principal: "*"
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !Ref SNSTopicAppointment
+
+    SNSTopicAppointmentSubscriptionSQSMX:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Protocol: sqs
+        Endpoint:
+          Fn::GetAtt:
+            - SQSMX
+            - Arn
+        TopicArn:
+          Ref: SNSTopicAppointment
+        RawMessageDelivery: true
+        FilterPolicy:
+          countryISO:
+            - MX
+        FilterPolicyScope: MessageBody
+    
+    PolicySQSMX:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref SQSMX
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: sqs:SendMessage
+              Resource: !GetAtt SQSMX.Arn
+              Principal: "*"
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !Ref SNSTopicAppointment
+
+    SQSPE:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${self:provider.stage}-sqs-pe
+        VisibilityTimeout: 300    
+
+    SQSCO:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${self:provider.stage}-sqs-co
+        VisibilityTimeout: 300    
+
+    SQSCL:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${self:provider.stage}-sqs-cl
+        VisibilityTimeout: 300        
+
+    SQSMX:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${self:provider.stage}-sqs-mx
+        VisibilityTimeout: 300      
+
+    SQSExternal:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${self:provider.stage}-sqs-external
+        VisibilityTimeout: 300    
+
+    EventBridgeRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: events.amazonaws.com
+              Action: "sts:AssumeRole"
+        Path: /
+        Policies:
+          - PolicyName: SendMessage
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action: 
+                    - "sqs:SendMessage"
+                  Resource: "*"
+
+    EventBus:
+      Type: AWS::Events::EventBus
+      Properties:
+        Name: ${self:service}-${self:provider.stage}-event-bus
+    
+    Rule:
+      Type: AWS::Events::Rule
+      Properties:
+        EventBusName: !Ref EventBus
+        EventPattern:
+          source:
+            - "web-app"
+            - "mobile-app"
+            - "desktop-app"
+          "detail-type":
+            - "appointment-create"
+            - "appointment-cancel"
+        Targets:
+          - Arn:
+              Fn::GetAtt:
+                - SQSExternal
+                - Arn
+            Id: "DestinationCustom"
+            RoleArn:
+              Fn::GetAtt:
+                - EventBridgeRole
+                - Arn
