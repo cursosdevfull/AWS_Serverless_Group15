@@ -1,0 +1,138 @@
+org: sergiohidalgocaceres
+app: example01
+service: lambda-eventbridge-sns-sqs
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  stage: ${opt:stage, "dev"}
+  iam:
+    role:
+      statements:
+        - Action: events:PutEvents
+          Effect: Allow
+          Resource: "*"
+
+build:
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: false
+
+functions:
+  source:
+    handler: ./src/handlers/source.sender
+    environment:
+      EVENT_BUSNAME: !Ref EventBus
+    events:
+      - http:
+          path: /source
+          method: post
+
+resources:
+  Resources:
+    SQSElement:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: sqs-element
+        VisibilityTimeout: 300
+
+    SNSTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: sns-topic        
+
+    SNSTopicSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Protocol: sqs
+        Endpoint:
+          Fn::GetAtt:
+            - SQSElement
+            - Arn
+        TopicArn:
+          Ref: SNSTopic
+        RawMessageDelivery: true
+    
+    PolicySQSPE:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref SQSElement
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: sqs:SendMessage
+              Resource: !GetAtt SQSElement.Arn
+              Principal: "*"
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !Ref SNSTopic      
+
+    EventBridgeRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: events.amazonaws.com
+              Action: "sts:AssumeRole"
+        Path: /
+        Policies:
+          - PolicyName: MessageTopic
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action: 
+                    - "sns:publish"
+                  Resource: "*"
+
+    EventBus:
+      Type: AWS::Events::EventBus
+      Properties:
+        Name: myEventBus
+    
+    Rule:
+      Type: AWS::Events::Rule
+      Properties:
+        EventBusName: !Ref EventBus
+        EventPattern:
+          source:
+            - "web-app"
+            - "mobile-app"
+            - "desktop-app"
+          "detail-type":
+            - "appointment-create"
+            - "appointment-cancel"
+        Targets:
+          - Arn:
+              Fn::GetAtt:
+                - SNSTopic
+                - TopicArn
+            Id: "DestinationCustom"
+            RoleArn:
+              Fn::GetAtt:
+                - EventBridgeRole
+                - Arn                
+
+    Archive:
+      Type: AWS::Events::Archive
+      Properties:
+        ArchiveName: MyArchive
+        EventPattern:
+          source:
+            - "web-app"
+            - "mobile-app"
+            - "desktop-app"
+          "detail-type":
+            - "appointment-create"
+            - "appointment-cancel"
+        RetentionDays: 10
+        SourceArn:
+          Fn::GetAtt:
+            - EventBus
+            - Arn

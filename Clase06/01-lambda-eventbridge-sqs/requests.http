@@ -1,4 +1,4 @@
-post https://fw0wu3299g.execute-api.us-east-1.amazonaws.com/dev/source
+post https://1pahn3kuog.execute-api.us-east-1.amazonaws.com/dev/source
 Content-Type: application/json
 
 { "slotId": 1000, "patientId": "12345", "date": "2024-06-01T10:00:00Z", "countryISO": "PE" } 
