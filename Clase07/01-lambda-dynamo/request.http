@@ -1,0 +1,14 @@
+POST https://nv03kisu3l.execute-api.us-east-1.amazonaws.com/dev/insert
+Content-Type: application/http
+
+{
+    "patientId": 8965,
+    "slotId": "8579",
+    "countryISO": "PE"
+}
+
+### List
+GET https://nv03kisu3l.execute-api.us-east-1.amazonaws.com/dev/list
+
+### Filter
+GET https://nv03kisu3l.execute-api.us-east-1.amazonaws.com/dev/filter/8965

@@ -1,0 +1,70 @@
+org: sergiohidalgocaceres
+app: example01
+service: lambda-dynamodb
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  stage: ${opt:stage, "dev"}
+  iam:
+    role:
+      statements:
+        - Action:
+            - dynamodb:PutItem
+            - dynamodb:Scan
+          Effect: Allow
+          Resource:
+            Fn::GetAtt:
+              - Appointments
+              - Arn
+
+build:
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: false
+
+functions:
+  insert:
+    handler: ./src/handlers/insert.handler
+    environment:
+      TABLE_NAME: !Ref Appointments
+    events:
+      - http:
+          path: /insert
+          method: POST
+
+  list:
+    handler: ./src/handlers/list.handler
+    environment:
+      TABLE_NAME: !Ref Appointments
+    events:
+      - http:
+          path: /list
+          method: GET 
+
+  filter:
+    handler: ./src/handlers/filter.handler
+    environment:
+      TABLE_NAME: !Ref Appointments
+    events:
+      - http:
+          path: /filter/{patientId}
+          method: GET           
+
+resources:
+  Resources:
+    Appointments:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        KeySchema:
+          - AttributeName: "patientId"
+            KeyType: "HASH"
+          - AttributeName: "slotId"
+            KeyType: "RANGE"
+        AttributeDefinitions:
+          - AttributeName: "patientId"
+            AttributeType: "N"
+          - AttributeName: "slotId"
+            AttributeType: "S"
+        BillingMode: "PAY_PER_REQUEST"
