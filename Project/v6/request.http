@@ -1,19 +1,19 @@
-post https://t9wg12zwz5.execute-api.us-east-1.amazonaws.com/dev/appointment
+post https://ealbomfsk2.execute-api.us-east-1.amazonaws.com/dev/appointment
 Content-Type: application/json
 
 {
-  "slotId": 3695,
+  "slotId": 22222,
   "patientId": 485,
   "date": "2024-06-01",
   "countryISO": "MX"
 }
 
 ### external
-post https://t9wg12zwz5.execute-api.us-east-1.amazonaws.com/dev/external
+post https://ealbomfsk2.execute-api.us-east-1.amazonaws.com/dev/external
 Content-Type: application/json
 
 {
-  "slotId": 1600,
+  "slotId": 33333,
   "patientId": 485,
   "date": "2024-06-01",
   "countryISO": "MX"
