@@ -1,0 +1,55 @@
+EventBridgeRole:
+  Type: AWS::IAM::Role
+  Properties:
+    AssumeRolePolicyDocument:
+      Version: "2012-10-17"
+      Statement:
+        - Effect: Allow
+          Principal:
+            Service: events.amazonaws.com
+          Action: "sts:AssumeRole"
+    Path: /
+    Policies:
+      - PolicyName: PublishMessage
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Action: 
+                - "sns:publish"
+              Resource: !Ref SNSTopicAppointment                  
+
+EventBus:
+  Type: AWS::Events::EventBus
+  Properties:
+    Name: ${self:service}-${self:provider.stage}-event-bus
+
+Rule:
+  Type: AWS::Events::Rule
+  Properties:
+    EventBusName: !Ref EventBus
+    EventPattern:
+      source:
+        - "web-app"
+        - "mobile-app"
+        - "desktop-app"
+      "detail-type":
+        - "appointment-create"
+        - "appointment-cancel"
+    Targets:
+      - Arn:
+          Fn::GetAtt:
+            - SNSTopicAppointment
+            - TopicArn
+        Id: "DestinationCustom"
+        RoleArn:
+          Fn::GetAtt:
+            - EventBridgeRole
+            - Arn
+        InputTransformer:
+          InputPathsMap:
+            slotId: "$.detail.slotId"
+            patientId: "$.detail.patientId"
+            date: "$.detail.date"
+            countryISO: "$.detail.countryISO"
+          InputTemplate: '{"slotId": <slotId>, "patientId": <patientId>, "date": "<date>", "countryISO": "<countryISO>"}'

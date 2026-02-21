@@ -1,0 +1,34 @@
+name: aws
+runtime: nodejs22.x
+stage: ${opt:stage, "dev"}
+iam:
+  role:
+    statements:
+      - Action: sns:publish
+        Effect: Allow
+        Resource: !Ref SNSTopicAppointment
+      - Action: lambda:InvokeFunction
+        Effect: Allow
+        Resource: "arn:aws:lambda:*:*:function:*"      
+      - Action: events:PutEvents
+        Effect: Allow
+        Resource: "*"   
+      - Action:
+          - s3:GetObject
+          - s3:GetObjectVersion
+          - s3:ListBucket
+        Effect: Allow
+        Resource:
+          Fn::Join:
+            - ""
+            - - Fn::GetAtt:
+                  - PatientUpdateBucket
+                  - Arn
+              - "/*"
+      - Action:
+          - dynamodb:PutItem
+        Effect: Allow
+        Resource:
+          Fn::GetAtt:
+            - Patients
+            - Arn

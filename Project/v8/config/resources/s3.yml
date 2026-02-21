@@ -1,0 +1,9 @@
+PatientUpdateBucket:
+  Type: AWS::S3::Bucket
+  Properties:
+    BucketName: ${self:service}-${self:provider.stage}-csv-import-bucket
+    PublicAccessBlockConfiguration:
+      BlockPublicAcls: false
+      BlockPublicPolicy: false
+      IgnorePublicAcls: false
+      RestrictPublicBuckets: false

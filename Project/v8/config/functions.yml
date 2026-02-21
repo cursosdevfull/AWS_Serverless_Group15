@@ -1,0 +1,92 @@
+external:
+  handler: ./src/handlers/external.handler
+  environment:
+    EVENT_BUSNAME: !Ref EventBus
+  events:
+    - http:
+        path: /external
+        method: post
+
+test:
+  handler: ./src/handlers/test.handler
+
+appointment:
+  handler: ./src/handlers/appointment.handler
+  environment:
+    TOPIC_ARN: !Ref SNSTopicAppointment
+  events:
+    - http:
+        path: /appointment
+        method: post
+
+appointmentEnrichPe:
+  handler: ./src/handlers/appointment-enrich-pe.handler 
+  environment:
+    FUNCTION_NAME: !Ref AppointmentPeLambdaFunction
+  events:
+    - sqs:
+        arn:
+          Fn::GetAtt:
+            - SQSPE  
+            - Arn        
+        functionResponseType: ReportBatchItemFailures                
+
+appointmentPe:
+  handler: ./src/handlers/appointment-pe.handler 
+
+appointmentEnrichCl:
+  handler: ./src/handlers/appointment-enrich-cl.handler    
+  environment:
+    FUNCTION_NAME: !Ref AppointmentClLambdaFunction    
+  events:
+    - sqs:
+        arn:
+          Fn::GetAtt:
+            - SQSCL
+            - Arn
+        functionResponseType: ReportBatchItemFailures              
+
+appointmentCl:
+  handler: ./src/handlers/appointment-cl.handler    
+
+appointmentEnrichCo:
+  handler: ./src/handlers/appointment-enrich-co.handler    
+  environment:
+    FUNCTION_NAME: !Ref AppointmentCoLambdaFunction    
+  events:
+    - sqs:
+        arn:
+          Fn::GetAtt:
+            - SQSCO
+            - Arn
+        functionResponseType: ReportBatchItemFailures
+
+appointmentCo:
+  handler: ./src/handlers/appointment-co.handler    
+
+appointmentEnrichMx:
+  handler: ./src/handlers/appointment-enrich-mx.handler    
+  environment:
+    FUNCTION_NAME: !Ref AppointmentMxLambdaFunction    
+  events:
+    - sqs:
+        arn:
+          Fn::GetAtt:
+            - SQSMX
+            - Arn
+        functionResponseType: ReportBatchItemFailures              
+
+appointmentMx:
+  handler: ./src/handlers/appointment-mx.handler    
+
+import-patients:
+  handler: ./src/handlers/import-patients.handler
+  events:
+    - s3:
+        bucket: !Ref PatientUpdateBucket
+        existing: true
+        event: s3:ObjectCreated:*
+        rules:
+          - suffix: .csv
+  environment:
+    TABLE_NAME: !Ref Patients

@@ -1,0 +1,15 @@
+Patients:
+  Type: AWS::DynamoDB::Table
+  Properties:
+    TableName: ${self:service}-${self:provider.stage}-patients
+    KeySchema:
+      - AttributeName: "patientId"
+        KeyType: "HASH"
+      - AttributeName: "email"
+        KeyType: "RANGE"
+    AttributeDefinitions:
+      - AttributeName: "patientId"
+        AttributeType: "S"
+      - AttributeName: "email"
+        AttributeType: "S"
+    BillingMode: "PAY_PER_REQUEST"

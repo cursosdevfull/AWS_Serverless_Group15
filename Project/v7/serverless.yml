@@ -56,7 +56,8 @@ functions:
           arn:
             Fn::GetAtt:
               - SQSPE  
-              - Arn          
+              - Arn        
+          functionResponseType: ReportBatchItemFailures                
 
   appointmentPe:
     handler: ./src/handlers/appointment-pe.handler 
@@ -71,6 +72,7 @@ functions:
             Fn::GetAtt:
               - SQSCL
               - Arn
+          functionResponseType: ReportBatchItemFailures              
 
   appointmentCl:
     handler: ./src/handlers/appointment-cl.handler    
@@ -100,6 +102,7 @@ functions:
             Fn::GetAtt:
               - SQSMX
               - Arn
+          functionResponseType: ReportBatchItemFailures              
 
   appointmentMx:
     handler: ./src/handlers/appointment-mx.handler    
@@ -282,7 +285,13 @@ resources:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: ${self:service}-${self:provider.stage}-sqs-pe
-        VisibilityTimeout: 300    
+        VisibilityTimeout: 10
+        RedrivePolicy:
+          deadLetterTargetArn:
+            Fn::GetAtt:
+              - SQSDLQ
+              - Arn
+          maxReceiveCount: 1
 
     SQSCO:
       Type: AWS::SQS::Queue
@@ -300,13 +309,25 @@ resources:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: ${self:service}-${self:provider.stage}-sqs-cl
-        VisibilityTimeout: 300        
+        VisibilityTimeout: 10
+        RedrivePolicy:
+          deadLetterTargetArn:
+            Fn::GetAtt:
+              - SQSDLQ
+              - Arn
+          maxReceiveCount: 1  
 
     SQSMX:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: ${self:service}-${self:provider.stage}-sqs-mx
-        VisibilityTimeout: 300      
+        VisibilityTimeout: 10
+        RedrivePolicy:
+          deadLetterTargetArn:
+            Fn::GetAtt:
+              - SQSDLQ
+              - Arn
+          maxReceiveCount: 1  
 
     EventBridgeRole:
       Type: AWS::IAM::Role

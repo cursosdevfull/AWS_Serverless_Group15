@@ -1,0 +1,30 @@
+AlarmTopic:
+  Type: AWS::SNS::Topic
+  Properties:
+    TopicName: ${self:service}-${self:provider.stage}-topic-alarm
+
+AlarmTopicSubscription:
+  Type: AWS::SNS::Subscription
+  Properties:
+    Protocol: email
+    Endpoint: sergiohidalgocaceres@gmail.com
+    TopicArn:
+      Ref: AlarmTopic
+
+Alarm:
+  Type: AWS::CloudWatch::Alarm
+  Properties:
+    AlarmName: ${self:service}-${self:provider.stage}-alarm-error
+    MetricName: NumberOfMessagesReceived
+    Namespace: AWS/SQS
+    Dimensions:
+      - Name: QueueName
+        Value: ${self:service}-${self:provider.stage}-sqs-dlq
+    Statistic: Sum
+    Period: 10
+    EvaluationPeriods: 1
+    Threshold: 1
+    ComparisonOperator: GreaterThanThreshold
+    TreatMissingData: notBreaching
+    AlarmActions:
+      - !Ref AlarmTopic

@@ -1,0 +1,53 @@
+SQSDLQ:
+  Type: AWS::SQS::Queue
+  Properties:
+    QueueName: ${self:service}-${self:provider.stage}-sqs-dlq
+    VisibilityTimeout: 300   
+
+SQSPE:
+  Type: AWS::SQS::Queue
+  Properties:
+    QueueName: ${self:service}-${self:provider.stage}-sqs-pe
+    VisibilityTimeout: 10
+    RedrivePolicy:
+      deadLetterTargetArn:
+        Fn::GetAtt:
+          - SQSDLQ
+          - Arn
+      maxReceiveCount: 1
+
+SQSCO:
+  Type: AWS::SQS::Queue
+  Properties:
+    QueueName: ${self:service}-${self:provider.stage}-sqs-co
+    VisibilityTimeout: 10
+    RedrivePolicy:
+      deadLetterTargetArn:
+        Fn::GetAtt:
+          - SQSDLQ
+          - Arn
+      maxReceiveCount: 1
+
+SQSCL:
+  Type: AWS::SQS::Queue
+  Properties:
+    QueueName: ${self:service}-${self:provider.stage}-sqs-cl
+    VisibilityTimeout: 10
+    RedrivePolicy:
+      deadLetterTargetArn:
+        Fn::GetAtt:
+          - SQSDLQ
+          - Arn
+      maxReceiveCount: 1  
+
+SQSMX:
+  Type: AWS::SQS::Queue
+  Properties:
+    QueueName: ${self:service}-${self:provider.stage}-sqs-mx
+    VisibilityTimeout: 10
+    RedrivePolicy:
+      deadLetterTargetArn:
+        Fn::GetAtt:
+          - SQSDLQ
+          - Arn
+      maxReceiveCount: 1  
