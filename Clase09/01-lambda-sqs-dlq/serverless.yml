@@ -1,0 +1,70 @@
+org: sergiohidalgocaceres
+app: example01
+service: lambda-sqs-dlq
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  stage: ${opt:stage, "dev"}
+  iam:
+    role:
+      statements:
+        - Action:
+            - sqs:sendmessage
+          Effect: Allow
+          Resource: arn:aws:sqs:*:*:*
+
+build:
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: false
+
+functions:
+  source:
+    handler: ./src/handlers/source.handler
+    events:
+      - http:
+          path: /source
+          method: POST
+    environment:
+      SQS_ELEMENT_URL: !Ref SQSElement
+
+  destination:
+    handler: ./src/handlers/destination.handler
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSElement
+              - Arn
+          functionResponseType: ReportBatchItemFailures
+
+  dlq:
+    handler: ./src/handlers/dlq.handler
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSDLQ
+              - Arn
+              
+resources:
+  Resources:
+    SQSDLQ:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: sqs-dlq
+        VisibilityTimeout: 300   
+
+    SQSElement:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: sqs-element
+        VisibilityTimeout: 10
+        RedrivePolicy:
+          deadLetterTargetArn:
+            Fn::GetAtt:
+              - SQSDLQ
+              - Arn
+          maxReceiveCount: 1

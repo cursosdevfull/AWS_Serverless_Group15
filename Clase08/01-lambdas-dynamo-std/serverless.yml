@@ -1,0 +1,117 @@
+org: sergiohidalgocaceres
+app: example01
+service: lambdas-dynamodb-std
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  stage: ${opt:stage, "dev"}
+  iam:
+    role:
+      statements:
+        - Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:Query
+            - dynamodb:BatchWriteItem
+          Effect: Allow
+          Resource:
+            - Fn::GetAtt: [SingleTable, Arn]
+            - Fn::Join:
+                - ""
+                - - Fn::GetAtt: [SingleTable, Arn]
+                  - "/index/*"
+
+build:
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: false
+
+functions:
+  # Customer
+  createCustomer:
+    handler: "./src/handlers/createCustomer.handler"
+    events:
+      - http:
+          path: /customers
+          method: POST
+    environment:
+      TABLE_NAME: !Ref SingleTable        
+
+  getCustomer:
+    handler: "./src/handlers/getCustomer.handler"
+    events:
+      - http:
+          path: /customers/{customerId}
+          method: GET
+    environment:
+      TABLE_NAME: !Ref SingleTable     
+
+  listCustomer:
+    handler: "./src/handlers/listCustomers.handler"
+    events:
+      - http:
+          path: /customers
+          method: GET
+    environment:
+      TABLE_NAME: !Ref SingleTable
+
+  # Order
+  createOrder:
+    handler: "./src/handlers/createOrder.handler"
+    events:
+      - http:
+          path: /orders
+          method: POST
+    environment:
+      TABLE_NAME: !Ref SingleTable          
+
+  getOrderDetail:
+    handler: "./src/handlers/getOrderDetail.handler"
+    events:
+      - http:
+          path: /orders/{orderId}
+          method: GET
+    environment:
+      TABLE_NAME: !Ref SingleTable         
+
+  getOrdersByCustomer:
+    handler: "./src/handlers/getOrdersByCustomer.handler"
+    events:
+      - http:
+          path: /customers/{customerId}/orders
+          method: GET
+    environment:
+      TABLE_NAME: !Ref SingleTable             
+
+resources:
+  Resources:
+    SingleTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: "SingleTable"
+        KeySchema:
+          - AttributeName: "PK"
+            KeyType: "HASH"
+          - AttributeName: "SK"
+            KeyType: "RANGE"
+        AttributeDefinitions:
+          - AttributeName: "PK"
+            AttributeType: "S"
+          - AttributeName: "SK"
+            AttributeType: "S"
+          - AttributeName: "GSI1PK"
+            AttributeType: "S"
+          - AttributeName: "GSI1SK"
+            AttributeType: "S"
+        GlobalSecondaryIndexes:
+          - IndexName: "GSI1"
+            KeySchema:
+              - AttributeName: "GSI1PK"
+                KeyType: "HASH"
+              - AttributeName: "GSI1SK"
+                KeyType: "RANGE"
+            Projection:
+              ProjectionType: "ALL"
+        BillingMode: "PAY_PER_REQUEST"                          

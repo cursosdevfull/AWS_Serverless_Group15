@@ -1,0 +1,8 @@
+POST https://vnfx1j9g7a.execute-api.us-east-1.amazonaws.com/dev/source
+Content-Type: application/http
+
+{
+    "name": "Joaquin",
+    "lastname": "Phoenix",
+    "email": "joaquin.phoenix@example.com"
+}

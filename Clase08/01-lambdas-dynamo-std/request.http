@@ -1,0 +1,45 @@
+### Create a new customer
+POST https://n3k7kn3dw8.execute-api.us-east-1.amazonaws.com/dev/customers
+Content-Type: application/json
+
+{
+    "customerId": "085166f3-d75b-4abe-898f-fa527b25d79f",
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "phone": "1234567890"
+}
+
+
+### Get customer by ID
+GET https://n3k7kn3dw8.execute-api.us-east-1.amazonaws.com/dev/customers/085166f3-d75b-4abe-898f-fa527b25d79f
+
+### List customers
+GET https://n3k7kn3dw8.execute-api.us-east-1.amazonaws.com/dev/customers
+
+### Create a new order for a customer
+POST https://n3k7kn3dw8.execute-api.us-east-1.amazonaws.com/dev/orders
+Content-Type: application/json
+
+{
+    "customerId": "085166f3-d75b-4abe-898f-fa527b25d79f",
+    "items": [
+        {
+            "productId": "d6c1f847-8d79-4704-aa1a-1df64337b03b",
+            "productName": "Product 1",
+            "quantity": 2,
+            "unitPrice": 10.0
+        },
+        {
+            "productId": "68441446-b787-4ce0-a5f0-382a5f6e13bc",
+            "productName": "Product 2",
+            "quantity": 1,
+            "unitPrice": 20.0
+        }
+    ]
+}
+
+### Get order details
+GET https://n3k7kn3dw8.execute-api.us-east-1.amazonaws.com/dev/orders/ac762b29-707f-48a4-aada-104485dea3f7
+
+### List orders for a customer
+GET  https://n3k7kn3dw8.execute-api.us-east-1.amazonaws.com/dev/customers/085166f3-d75b-4abe-898f-fa527b25d79f/orders

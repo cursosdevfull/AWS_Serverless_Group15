@@ -57,6 +57,7 @@ resources:
     Appointments:
       Type: AWS::DynamoDB::Table
       Properties:
+        TableName: appointments
         KeySchema:
           - AttributeName: "patientId"
             KeyType: "HASH"
