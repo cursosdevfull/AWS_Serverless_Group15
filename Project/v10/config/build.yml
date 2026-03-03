@@ -1,0 +1,6 @@
+esbuild:
+  bundle: true
+  minify: true
+  sourcemap: false
+  exclude:
+    - "@aws-sdk/*"

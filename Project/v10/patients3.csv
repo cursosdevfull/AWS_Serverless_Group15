@@ -1,0 +1,21 @@
+patientId,name,phone,email,countryISO
+550e8400-e29b-41d4-a716-446655440001,María García López,+51987654321,maria.garcia@email.com,PE
+550e8400-e29b-41d4-a716-446655440002,John Smith,+52155512345678,john.smith@email.com,MX
+550e8400-e29b-41d4-a716-446655440003,Pierre Dubois,+57312345678,pierre.dubois@email.com,CO
+550e8400-e29b-41d4-a716-446655440004,Ana Silva Santos,+51912345678,ana.silva@email.com,PE
+550e8400-e29b-41d4-a716-446655440005,Giuseppe Rossi,+52556789123,giuseppe.rossi@email.com,MX
+550e8400-e29b-41d4-a716-446655440006,Hans Mueller,+57345678912,hans.mueller@email.com,CO
+550e8400-e29b-41d4-a716-446655440007,Carlos Rodríguez,+52155512345678,carlos.rodriguez@email.com,MX
+550e8400-e29b-41d4-a716-446655440008,Sarah Johnson,+51987123456,sarah.johnson@email.com,PE
+550e8400-e29b-41d4-a716-446655440009,Hiroshi Tanaka,+57318765432,hiroshi.tanaka@email.com,CO
+550e8400-e29b-41d4-a716-446655440010,Isabella Bianchi,+52554567890,isabella.bianchi@email.com,MX
+550e8400-e29b-41d4-a716-446655440011,Michael Brown,+51923456789,michael.brown@email.com,PE
+550e8400-e29b-41d4-a716-446655440012,Sofia Andersson,+57315678901,sofia.andersson@email.com,CO
+550e8400-e29b-41d4-a716-446655440013,Diego Martínez,+52557890123,diego.martinez@email.com,MX
+550e8400-e29b-41d4-a716-446655440014,Emma Wilson,+51934567890,emma.wilson@email.com,PE
+550e8400-e29b-41d4-a716-446655440015,Luis Fernando Costa,+57316789012,luis.costa@email.com,CO
+550e8400-e29b-41d4-a716-446655440016,Yuki Yamamoto,+52558901234,yuki.yamamoto@email.com,MX
+550e8400-e29b-41d4-a716-446655440017,Robert Davis,+51945678901,robert.davis@email.com,PE
+550e8400-e29b-41d4-a716-446655440018,Carmen Fernández,+57317890123,carmen.fernandez@email.com,CO
+550e8400-e29b-41d4-a716-446655440019,Ahmed Hassan,+52559012345,ahmed.hassan@email.com,MX
+550e8400-e29b-41d4-a716-446655440020,Priya Sharma,+51956789012,priya.sharma@email.com,PE

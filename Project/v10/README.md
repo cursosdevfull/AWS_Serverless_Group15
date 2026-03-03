@@ -1,0 +1,15 @@
+# Cognito
+
+### Inicialización
+```bash
+aws cognito-idp initiate-auth --auth-flow USER_PASSWORD_AUTH --client-id 3j1jnt2v2mhj1c9h59qsh07stf --auth-parameters USERNAME=sergiohidalgocaceres@gmail.com,PASSWORD=elgigante
+```
+
+### Generación de nuevo password
+```bash
+aws cognito-idp respond-to-auth-challenge --client-id 3j1jnt2v2mhj1c9h59qsh07stf --challenge-name NEW_PASSWORD_REQUIRED --challenge-responses USERNAME=sergiohidalgocaceres@gmail.com,NEW_PASSWORD=elmundoancho --session AYABePVTpWkKKv533u6hNUGxczYAHQABAAdTZXJ2aWNlABBDb2duaXRvVXNlclBvb2xzAAEAB2F3cy1rbXMAS2Fybjphd3M6a21zOnVzLWVhc3QtMTo3NDU2MjM0Njc1NTU6a2V5L2IxNTVhZmNhLWJmMjktNGVlZC1hZmQ4LWE5ZTA5MzY1M2RiZQC4AQIBAHhR9E4zNbI1ofi3Y01_Ljgh2wK-ZaC__bKufjbgmejy4gGF3okMoANZN237K_rk3Br8AAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMS8BQuE26gT-78x9QAgEQgDsmvR0TATyDRpABDZnesGkQ3HkOJZ4hYroaG2qkcO6993nn3iMJIBYg7PHKYR0PekplgtOArqOam16C-AIAAAAADAAAEAAAAAAAAAAAAAAAAADnCyQU1makY-cH3GXH5zzl_____wAAAAEAAAAAAAAAAAAAAAEAAADzL5hwiF1z7ngyiLCWNknVgzhs_0gSTxK88Fe0p0b3VtgecGVOmZIg2Q4_nkHFUqVVuRFvCxAFmAQSt6QKoss7SwtuKZUGOsJIV3PyN33G_6OM8IMw8j_cpD9XFmJ5xM7bJNd4yiUalCksAzNGn03eyg48fqhhYzeAjYwVc3zvNb4M25-bbIdcCusPdSKchdFdQNIAX3SsEqKSVwk6NlgTtDkolpjMvTu1tKkmCHwEHMte-blcf77Hkx-b2BzPzgWXH-X-RPZpj-xXLMowrlRe32Mp4fZfTdk-mx4f5xkg42mUEEYN1OaEgXvAcXcyJ68-D_IXE0kNeb0HTcIcXv0FvKeARQ
+```
+### Login
+```bash
+aws cognito-idp initiate-auth --auth-flow USER_PASSWORD_AUTH --client-id 3j1jnt2v2mhj1c9h59qsh07stf --auth-parameters USERNAME=sergiohidalgocaceres@gmail.com,PASSWORD=elmundoancho
+```

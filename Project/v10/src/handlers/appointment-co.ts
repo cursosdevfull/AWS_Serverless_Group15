@@ -1,0 +1,45 @@
+import { EnrichedEvent } from "../types";
+
+export const handler = async (events: EnrichedEvent[]) => {
+  console.log("Event received in destination handler Colombia:", events);
+
+  const results: EnrichedEvent[] = [];
+
+  try {
+    for (const event of events) {
+      const {
+        slotId,
+        patientId,
+        date,
+        countryISO,
+        historyNumber,
+        enriched,
+        enrichedAt,
+      } = event;
+
+      console.log(
+        `Processing appointment for patient ${patientId} on ${date} in ${countryISO} (slot ${slotId}) with history number ${historyNumber}, enriched: ${enriched}, enriched at: ${enrichedAt})`,
+      );
+
+      results.push({
+        slotId,
+        patientId,
+        date,
+        countryISO,
+        historyNumber,
+        enriched,
+        enrichedAt,
+      });
+    }
+  } catch (error) {
+    console.log(
+      "Error processing events in destination handler Colombia:",
+      error,
+    );
+  }
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify(results),
+  };
+};

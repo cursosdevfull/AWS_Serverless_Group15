@@ -1,0 +1,17 @@
+org: sergiohidalgocaceres
+app: v1
+service: appointment-v10
+
+provider: ${file(./config/provider.yml)}
+
+plugins: ${file(./config/plugins.yml)}
+
+custom: ${file(./config/custom.yml)}
+           
+build: ${file(./config/build.yml)}
+
+package: ${file(./config/package.yml)}
+
+functions: ${file(./config/functions.yml)}
+
+resources: ${file(./config/resources.yml)}

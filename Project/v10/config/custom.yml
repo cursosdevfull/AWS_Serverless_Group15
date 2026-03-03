@@ -1,0 +1,3 @@
+s3Sync:
+  - bucketName: ${self:service}-${self:provider.stage}-html-bucket
+    localDir: appWeb/dist/appWeb/browser

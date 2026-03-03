@@ -1,0 +1,21 @@
+post https://gbj3nhktba.execute-api.us-east-1.amazonaws.com/dev/appointment
+Content-Type: application/json
+Authorization: eyJraWQiOiJMUmczc2tYQU9iWGF0R1FvQXBKSEVTSXlUOWlyVlU5NXA5K1lpbEJaV0hrPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI4NGM4ZDQ3OC1hMGMxLTcwYTktYmIxMS1mYTI4OTdkYWUwM2UiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiaXNzIjoiaHR0cHM6XC9cL2NvZ25pdG8taWRwLnVzLWVhc3QtMS5hbWF6b25hd3MuY29tXC91cy1lYXN0LTFfMDE4OXYwajFSIiwiY29nbml0bzp1c2VybmFtZSI6Ijg0YzhkNDc4LWEwYzEtNzBhOS1iYjExLWZhMjg5N2RhZTAzZSIsIm9yaWdpbl9qdGkiOiI3YzUyODlhYi1lNGIxLTQyNmYtOWMxNi00ZjgyZmY5NDUwNmEiLCJhdWQiOiIzajFqbnQydjJtaGoxYzloNTlxc2gwN3N0ZiIsImV2ZW50X2lkIjoiOTA3MzVkNjktOTc0MS00ZmQwLWFmODUtNTZlOWIwOGY2NTA4IiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE3NzE4OTUyMDgsImV4cCI6MTc3MTg5ODgwOCwiaWF0IjoxNzcxODk1MjA4LCJqdGkiOiI5YzQ3NDg5OC04OGI3LTRkNGEtYTZjMi03OGM5ZDc3YmRlNzAiLCJlbWFpbCI6InNlcmdpb2hpZGFsZ29jYWNlcmVzQGdtYWlsLmNvbSJ9.Jnd5jGTvCeFh3YUsZvuhXga0K4jGBu0vph5Q95Pybq79gJakxQWPGshE1bh0JoCvNbrnrt__EDnbe2_t3xDXCCST_qfk0_m2y-c7ttR0e6724yR3f4iioU4mdqIBgUiv-wsxu6hjSBG6bM1nC61eMq5ctMH2Sn7YkF36QLgUL9RZmTzb5ZlGXRmScSUWFCb7a1rUoE6EtQUNZazOelyRKhfB9WmHbBNYyPrDBDAz6vmNn3fGKw-gFSExGxtsDCfMWvp_PbgYoKHrSYct12wGpV2q98KvrnT62gTbrA-vaGhPQmCddvj1K0YFk5dHqGCyfc8XWTP1_GjOvelmT_-QTA
+
+{
+  "slotId": 22222,
+  "patientId": 600,
+  "date": "2026-06-01",
+  "countryISO": "CO"
+}
+
+### external
+post https://ealbomfsk2.execute-api.us-east-1.amazonaws.com/dev/external
+Content-Type: application/json
+
+{
+  "slotId": 33333,
+  "patientId": 485,
+  "date": "2024-06-01",
+  "countryISO": "MX"
+}

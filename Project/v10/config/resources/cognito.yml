@@ -1,0 +1,41 @@
+AppointmentCognitoUserPool:
+  Type: AWS::Cognito::UserPool
+  Properties:
+    UserPoolName: ${self:service}-${self:provider.stage}-cognito-user-pool
+    UsernameAttributes:
+      - email
+    AutoVerifiedAttributes:
+      - email
+    EmailVerificationSubject: "Validation required"
+    EmailVerificationMessage: "Thank for registration in our platform. Please verify your email using the following code: {####}"
+    Policies:
+      PasswordPolicy:
+        MinimumLength: 8
+        RequireLowercase: false
+        RequireUppercase: false
+        RequireNumbers: false
+        RequireSymbols: false
+        TemporaryPasswordValidityDays: 0
+
+AppointmentCognitoUserPoolClient:
+  Type: AWS::Cognito::UserPoolClient
+  Properties:
+    ClientName: ${self:service}-${self:provider.stage}-userpool-client
+    UserPoolId: !Ref AppointmentCognitoUserPool
+    GenerateSecret: false
+    ExplicitAuthFlows:
+      - ALLOW_USER_PASSWORD_AUTH
+      - ALLOW_REFRESH_TOKEN_AUTH
+      - ALLOW_USER_SRP_AUTH
+
+AppointmentCognitoAuthorizer:
+  Type: AWS::ApiGateway::Authorizer
+  Properties:
+    Name: ${self:service}-${self:provider.stage}-authorizer
+    IdentitySource: method.request.header.Authorization
+    RestApiId: !Ref ApiGatewayRestApi
+    Type: COGNITO_USER_POOLS
+    ProviderARNs:
+      - Fn::GetAtt:
+        - AppointmentCognitoUserPool
+        - Arn

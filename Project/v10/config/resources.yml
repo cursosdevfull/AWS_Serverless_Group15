@@ -1,0 +1,7 @@
+- Resources: ${file(./config/resources/sns.yml)}
+- Resources: ${file(./config/resources/sqs.yml)}
+- Resources: ${file(./config/resources/event-bus.yml)}
+- Resources: ${file(./config/resources/alarm.yml)}
+- Resources: ${file(./config/resources/s3.yml)}
+- Resources: ${file(./config/resources/dynamo.yml)}
+- Resources: ${file(./config/resources/cognito.yml)}

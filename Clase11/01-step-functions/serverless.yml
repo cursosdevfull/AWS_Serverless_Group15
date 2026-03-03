@@ -1,0 +1,175 @@
+org: sergiohidalgocaceres
+app: example01
+service: step-functions
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  stage: ${opt:stage, "dev"}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+            - s3:PutObject
+            - s3:ListBucket
+          Resource: "*"
+
+plugins:
+  - serverless-step-functions
+
+build:
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: false
+    target: node22
+    exclude:
+      - aws-sdk
+
+functions:
+  getAllTeams:
+    handler: src/functions/get-all-teams.handler
+    environment:
+      BUCKET_NAME: !Ref DataBucket
+
+  getApiKeys:
+    handler: src/functions/get-api-keys.handler
+    environment:
+      BUCKET_NAME: !Ref DataBucket
+
+  processAndFilterTeams:
+    handler: src/functions/process-and-filter-teams.handler
+    environment:
+      BUCKET_NAME: !Ref DataBucket
+
+  fetchOrdersPage:
+    handler: src/functions/fetch-orders-page.handler
+    environment:
+      BUCKET_NAME: !Ref DataBucket
+      
+  fetchAndSaveOrders:
+    handler: src/functions/fetch-and-save-orders.handler
+    environment:
+      BUCKET_NAME: !Ref DataBucket      
+
+stepFunctions:
+  stateMachines:
+    PrincipalStateMachine:
+      name: ${self:service}-${self:provider.stage}-principal-state-machine
+      definition:
+        Comment: "Principal State Machine"
+        StartAt: GetDataInParallel
+        States:
+          GetDataInParallel:
+            Type: Parallel
+            QueryLanguage: JSONata
+            Branches:
+              - StartAt: GetAllTeams
+                States:
+                  GetAllTeams:
+                    Type: Task
+                    Resource: !GetAtt GetAllTeamsLambdaFunction.Arn
+                    QueryLanguage: JSONata
+                    Output: "{% $merge([$states.input, {'teams': $states.result}]) %}"
+                    End: true      
+              - StartAt: GetApiKeys
+                States:
+                  GetApiKeys:
+                    Type: Task
+                    Resource: !GetAtt GetApiKeysLambdaFunction.Arn
+                    QueryLanguage: JSONata
+                    Output: "{% $merge([$states.input, {'apiKeys': $states.result}]) %}"
+                    End: true 
+            Next: MergeParallelResults
+          MergeParallelResults:
+            Type: Pass
+            QueryLanguage: JSONata
+            Output:
+              teamsLocation: "{% $states.input[0].teams %}"
+              apiKeysLocation: "{% $states.input[1].apiKeys %}"
+            Next: ProcessAndFilterTeams
+          ProcessAndFilterTeams:
+            Type: Task
+            Resource: !GetAtt ProcessAndFilterTeamsLambdaFunction.Arn
+            QueryLanguage: JSONata
+            Output:  "{% $merge([$states.input, $states.result]) %}"           
+            Next: PrepareTeamsForMapping
+          PrepareTeamsForMapping:
+            Type: Pass  
+            QueryLanguage: JSONata
+            Output:
+              teamsToProcess: "{% $states.input.teamsToProcess %}"
+              originalData: "{% $states.input %}"
+            Next: ProcessEachTeam
+          ProcessEachTeam:
+            Type: Map
+            MaxConcurrency: 5
+            ItemsPath: $.teamsToProcess
+            Iterator:
+              StartAt: InitializeOrderPaging
+              States:
+                InitializeOrderPaging:
+                  Type: Pass
+                  Parameters:
+                    teamId.$: $.id
+                    apiKey.$: $.apiKey
+                    name.$: $.name
+                  Next: FetchOrdersPage
+                FetchOrdersPage:
+                  Type: Task
+                  Resource: !GetAtt FetchOrdersPageLambdaFunction.Arn
+                  ResultSelector:
+                    ordersCount.$: "States.ArrayLength($.orders)"
+                    teamInfo.$: $.teamInfo
+                    ordersLocation.$: $.ordersLocation
+                  Next: CheckIfOrdersExist
+                CheckIfOrdersExist:
+                  Type: Choice
+                  Choices:
+                    - Variable: $.ordersCount
+                      NumericGreaterThan: 0
+                      Next: ProcessOrderDirectly
+                  Default: TeamOrdersDone
+                ProcessOrderDirectly:
+                  Type: Map
+                  MaxConcurrency: 10
+                  ItemReader:
+                    Resource: arn:aws:states:::s3:getObject
+                    ReaderConfig:
+                      InputType: JSON
+                    Parameters:
+                      Bucket: !Ref DataBucket
+                      Key.$: $.ordersLocation
+                  ItemSelector:
+                    order.$: $$.Map.Item.Value
+                    teamInfo.$: $.teamInfo
+                    ordersLocation.$: $.ordersLocation
+                  ItemProcessor:
+                    ProcessorConfig:
+                      Mode: DISTRIBUTED
+                      ExecutionType: STANDARD
+                    StartAt: FetchAndSaveOrders
+                    States:
+                      FetchAndSaveOrders:
+                        Type: Task
+                        Resource: !GetAtt FetchAndSaveOrdersLambdaFunction.Arn
+                        End: true
+                  Next: TeamOrdersDone
+                TeamOrdersDone:
+                  Type: Pass
+                  End: true
+            End: true
+
+
+resources:
+  Resources:
+    DataBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:service}-${self:provider.stage}-data-bucket
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
